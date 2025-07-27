@@ -6,6 +6,8 @@ import com.webcamapp.mobile.data.model.MotionEvent
 import com.webcamapp.mobile.data.model.Recording
 import com.webcamapp.mobile.data.model.RecordingType
 import com.webcamapp.mobile.advanced.AdvancedCameraManager
+import com.arthenica.ffmpegkit.FFmpegKit
+import com.arthenica.ffmpegkit.ReturnCode
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -146,8 +148,24 @@ class RecordingManager @Inject constructor(
             // Update storage info
             updateStorageInfo()
 
-            Log.d(TAG, "Stopped recording: ${recording.fileName}, duration: ${duration}ms, size: ${fileSize}bytes")
-            Result.success(updatedRecording)
+            // Post-process video to overlay date/time and app name
+            val overlayedFile = File(recordingFile.parent, "overlayed_${recordingFile.name}")
+            val overlaySuccess = overlayDateTimeAndAppNameOnVideo(recordingFile, overlayedFile, dateFormat, "WebcamApp")
+            val finalFile = if (overlaySuccess) {
+                // Replace original file
+                if (recordingFile.delete()) {
+                    overlayedFile.renameTo(recordingFile)
+                    recordingFile
+                } else {
+                    overlayedFile // fallback: keep overlayed file
+                }
+            } else {
+                recordingFile // fallback: original file
+            }
+            val finalRecording = updatedRecording.copy(filePath = finalFile.absolutePath, fileSize = finalFile.length())
+
+            Log.d(TAG, "Stopped recording: ${finalRecording.fileName}, duration: ${finalRecording.duration}ms, size: ${finalRecording.fileSize}bytes, overlay: $overlaySuccess")
+            Result.success(finalRecording)
         } catch (e: Exception) {
             Log.e(TAG, "Error stopping recording", e)
             Result.failure(e)
@@ -273,6 +291,33 @@ class RecordingManager @Inject constructor(
             Log.e(TAG, "Error creating thumbnail", e)
             return null
         }
+    }
+
+    suspend fun overlayDateTimeAndAppNameOnVideo(
+        inputFile: File,
+        outputFile: File,
+        dateFormat: String = this.dateFormat,
+        appName: String = "WebcamApp"
+    ): Boolean {
+        // Compose FFmpeg drawtext filter
+        val fontSize = 24
+        val fontColor = "white"
+        val boxColor = "black@0.5"
+        val boxBorder = 5
+        val x = 20
+        val y = "h-line_h-20"
+        // FFmpeg date/time: %{localtime:%Y-%m-%d %H\\:%M\\:%S}
+        val ffmpegDateFormat = dateFormat
+            .replace("yyyy", "%Y")
+            .replace("MM", "%m")
+            .replace("dd", "%d")
+            .replace("HH", "%H")
+            .replace("mm", "%M")
+            .replace("ss", "%S")
+        val drawtext = "drawtext=fontfile=/system/fonts/Roboto-Regular.ttf:text='%{localtime:$ffmpegDateFormat}  |  $appName':fontcolor=$fontColor:fontsize=$fontSize:box=1:boxcolor=$boxColor:boxborderw=$boxBorder:x=$x:y=$y"
+        val cmd = "-y -i '${inputFile.absolutePath}' -vf $drawtext -codec:a copy '${outputFile.absolutePath}'"
+        val session = FFmpegKit.execute(cmd)
+        return ReturnCode.isSuccess(session.returnCode)
     }
 }
 

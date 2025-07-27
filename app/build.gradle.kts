@@ -147,4 +147,7 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
+
+    // FFmpegKit for video overlays
+    implementation("com.arthenica:ffmpeg-kit-full-gpl:6.0-2")
 }
