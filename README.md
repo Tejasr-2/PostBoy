@@ -276,3 +276,9 @@ For more details, see the in-app help or contact support.
 ---
 
 For more details, see the in-app help or contact support.
+
+## Automatic Low Power Streaming
+- When the camera device battery drops below 5% or the device enters low power mode, the app automatically switches to low quality video streaming (lower resolution and frame rate) to save battery and data.
+- When the battery returns to normal or exits low power mode, the camera automatically restores the previous (higher) quality.
+- This process is seamless and requires no user action.
+- You can customize the quality settings in Advanced Settings.
