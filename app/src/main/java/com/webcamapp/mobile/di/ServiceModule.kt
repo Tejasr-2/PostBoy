@@ -8,6 +8,9 @@ import com.webcamapp.mobile.qr.QRCodeManager
 import com.webcamapp.mobile.recording.RecordingManager
 import com.webcamapp.mobile.webrtc.SignalingManager
 import com.webcamapp.mobile.webrtc.WebRTCManager
+import com.webcamapp.mobile.advanced.AdvancedCameraManager
+import com.webcamapp.mobile.optimization.PerformanceOptimizer
+import com.webcamapp.mobile.playback.VideoPlaybackManager
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -50,4 +53,17 @@ object ServiceModule {
     @Provides
     @Singleton
     fun provideDevicePairingManager(devicePairingManager: DevicePairingManager): DevicePairingManager = devicePairingManager
+
+    // Phase 5: Advanced Features & Optimization Components
+    @Provides
+    @Singleton
+    fun provideAdvancedCameraManager(advancedCameraManager: AdvancedCameraManager): AdvancedCameraManager = advancedCameraManager
+
+    @Provides
+    @Singleton
+    fun providePerformanceOptimizer(performanceOptimizer: PerformanceOptimizer): PerformanceOptimizer = performanceOptimizer
+
+    @Provides
+    @Singleton
+    fun provideVideoPlaybackManager(videoPlaybackManager: VideoPlaybackManager): VideoPlaybackManager = videoPlaybackManager
 }
