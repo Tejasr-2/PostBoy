@@ -30,8 +30,11 @@ class CameraService : Service() {
 
     companion object {
         private const val NOTIFICATION_ID = 1001
+        private const val MOTION_NOTIFICATION_ID = 2000
         private const val CHANNEL_ID = "camera_service_channel"
+        private const val MOTION_CHANNEL_ID = "motion_notification_channel"
         private const val CHANNEL_NAME = "Camera Service"
+        private const val MOTION_CHANNEL_NAME = "Motion Notifications"
 
         const val ACTION_START_CAMERA = "com.webcamapp.mobile.START_CAMERA"
         const val ACTION_STOP_CAMERA = "com.webcamapp.mobile.STOP_CAMERA"
@@ -163,7 +166,10 @@ class CameraService : Service() {
 
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
+            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            
+            // Camera service channel
+            val cameraChannel = NotificationChannel(
                 CHANNEL_ID,
                 CHANNEL_NAME,
                 NotificationManager.IMPORTANCE_LOW
@@ -171,13 +177,89 @@ class CameraService : Service() {
                 description = "Camera service notifications"
                 setShowBadge(false)
             }
-            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
+            notificationManager.createNotificationChannel(cameraChannel)
+            
+            // Motion notification channel
+            val motionChannel = NotificationChannel(
+                MOTION_CHANNEL_ID,
+                MOTION_CHANNEL_NAME,
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "Motion detection notifications"
+                setShowBadge(true)
+                enableVibration(true)
+                enableLights(true)
+            }
+            notificationManager.createNotificationChannel(motionChannel)
         }
     }
 
     private fun sendMotionNotification(motionEvent: com.webcamapp.mobile.data.model.MotionEvent) {
-        // TODO: Implement push notification to viewer devices
+        try {
+            // Create motion notification for viewer devices
+            val motionNotification = createMotionNotification(motionEvent)
+            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            
+            // Send notification with unique ID for motion events
+            val motionNotificationId = MOTION_NOTIFICATION_ID + motionEvent.id.hashCode()
+            notificationManager.notify(motionNotificationId, motionNotification)
+            
+            // Log motion event for analytics
+            Log.d(TAG, "Motion notification sent: ${motionEvent.id}")
+            
+            // In a real implementation, this would also send to paired viewer devices
+            // via Firebase Cloud Messaging or WebRTC signaling
+            sendMotionToViewerDevices(motionEvent)
+            
+        } catch (e: Exception) {
+            Log.e(TAG, "Error sending motion notification", e)
+        }
+    }
+
+    private fun createMotionNotification(motionEvent: com.webcamapp.mobile.data.model.MotionEvent): Notification {
+        val intent = Intent(this, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            putExtra("motion_event_id", motionEvent.id)
+        }
+        val pendingIntent = PendingIntent.getActivity(
+            this, motionEvent.id.hashCode(), intent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
+        return NotificationCompat.Builder(this, MOTION_CHANNEL_ID)
+            .setContentTitle("Motion Detected")
+            .setContentText("Motion detected at ${formatTimestamp(motionEvent.timestamp)}")
+            .setSmallIcon(R.drawable.ic_motion)
+            .setContentIntent(pendingIntent)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setAutoCancel(true)
+            .setCategory(NotificationCompat.CATEGORY_ALARM)
+            .build()
+    }
+
+    private fun sendMotionToViewerDevices(motionEvent: com.webcamapp.mobile.data.model.MotionEvent) {
+        // This would integrate with the WebRTC signaling or Firebase messaging
+        // to notify paired viewer devices about the motion event
+        serviceScope.launch {
+            try {
+                // For now, we'll log the intent to send to viewer devices
+                Log.d(TAG, "Would send motion event to viewer devices: ${motionEvent.id}")
+                
+                // In a full implementation, this would:
+                // 1. Get list of paired viewer devices
+                // 2. Send motion event via WebRTC signaling or FCM
+                // 3. Include motion event details and thumbnail
+                // 4. Handle delivery confirmations
+                
+            } catch (e: Exception) {
+                Log.e(TAG, "Error sending motion to viewer devices", e)
+            }
+        }
+    }
+
+    private fun formatTimestamp(timestamp: Long): String {
+        val dateFormat = java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault())
+        return dateFormat.format(java.util.Date(timestamp))
     }
 
     override fun onDestroy() {

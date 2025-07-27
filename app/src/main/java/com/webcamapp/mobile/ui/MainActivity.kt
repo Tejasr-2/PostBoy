@@ -16,6 +16,7 @@ import com.webcamapp.mobile.ui.screens.auth.RegisterScreen
 import com.webcamapp.mobile.ui.screens.camera.CameraScreen
 import com.webcamapp.mobile.ui.screens.viewer.ViewerScreen
 import com.webcamapp.mobile.ui.screens.role.RoleSelectionScreen
+import com.webcamapp.mobile.ui.screens.settings.AdvancedSettingsScreen
 import com.webcamapp.mobile.ui.theme.WebcamAppTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -55,6 +56,9 @@ fun WebcamApp() {
         }
         composable("viewer") {
             ViewerScreen(navController = navController)
+        }
+        composable("advanced_settings") {
+            AdvancedSettingsScreen(navController = navController)
         }
     }
 }

@@ -224,8 +224,46 @@ class RecordingManager @Inject constructor(
     }
 
     fun createThumbnail(recording: Recording): File? {
-        // TODO: Implement thumbnail creation from video
-        return null
+        try {
+            val videoFile = File(recording.filePath)
+            if (!videoFile.exists()) {
+                Log.w(TAG, "Video file not found: ${recording.filePath}")
+                return null
+            }
+
+            val thumbnailsDir = getThumbnailsDirectory()
+            if (!thumbnailsDir.exists()) {
+                thumbnailsDir.mkdirs()
+            }
+
+            val thumbnailName = "${recording.fileName.substringBeforeLast(".")}_thumb.jpg"
+            val thumbnailFile = File(thumbnailsDir, thumbnailName)
+
+            // Use MediaMetadataRetriever to extract thumbnail
+            val retriever = android.media.MediaMetadataRetriever()
+            retriever.setDataSource(videoFile.absolutePath)
+            
+            // Get thumbnail at 1 second into the video
+            val bitmap = retriever.frameAtTime(1000000, android.media.MediaMetadataRetriever.OPTION_CLOSEST_SYNC)
+            retriever.release()
+
+            if (bitmap != null) {
+                // Save bitmap as JPEG
+                val outputStream = java.io.FileOutputStream(thumbnailFile)
+                bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 80, outputStream)
+                outputStream.close()
+                bitmap.recycle()
+
+                Log.d(TAG, "Created thumbnail: ${thumbnailFile.absolutePath}")
+                return thumbnailFile
+            } else {
+                Log.w(TAG, "Failed to extract thumbnail from video")
+                return null
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error creating thumbnail", e)
+            return null
+        }
     }
 }
 

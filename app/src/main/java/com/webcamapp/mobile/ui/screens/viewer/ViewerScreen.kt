@@ -75,8 +75,8 @@ fun ViewerScreen(navController: NavController) {
             )
             
             Row {
-                IconButton(onClick = { showSettings = true }) {
-                    Icon(Icons.Default.Settings, contentDescription = "Settings")
+                IconButton(onClick = { navController.navigate("advanced_settings") }) {
+                    Icon(Icons.Default.Settings, contentDescription = "Advanced Settings")
                 }
                 IconButton(onClick = { showQRScanner = true }) {
                     Icon(Icons.Default.QrCodeScanner, contentDescription = "Scan QR Code")
