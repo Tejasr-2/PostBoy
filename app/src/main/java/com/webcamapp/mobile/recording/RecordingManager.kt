@@ -25,6 +25,7 @@ class RecordingManager @Inject constructor(
     private var currentRecording: Recording? = null
     private var recordingFile: File? = null
     private var isRecording = false
+    private var storageLimitGB: Float? = null
 
     private val _recordingState = MutableStateFlow(RecordingState.IDLE)
     val recordingState: StateFlow<RecordingState> = _recordingState
@@ -36,6 +37,10 @@ class RecordingManager @Inject constructor(
     val storageInfo: StateFlow<StorageInfo> = _storageInfo
 
     var dateFormat: String = "yyyy-MM-dd HH:mm:ss"
+
+    private val MAX_SEGMENT_DURATION_MS = 4 * 60 * 60 * 1000L // 4 hours in ms
+    private var segmentStartTime: Long = 0L
+    private var segmentJob: kotlinx.coroutines.Job? = null
 
     companion object {
         private const val TAG = "RecordingManager"
@@ -97,6 +102,20 @@ class RecordingManager @Inject constructor(
             _recordingState.value = RecordingState.RECORDING
             _currentRecordingDuration.value = 0L
 
+            segmentStartTime = System.currentTimeMillis()
+            segmentJob?.cancel()
+            segmentJob = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+                while (isRecording) {
+                    val elapsed = System.currentTimeMillis() - segmentStartTime
+                    if (elapsed >= MAX_SEGMENT_DURATION_MS) {
+                        stopRecording()
+                        startRecording() // start new segment
+                        break
+                    }
+                    kotlinx.coroutines.delay(60_000) // check every minute
+                }
+            }
+
             Log.d(TAG, "Started ${recordingType.name} recording: ${recordingFile.name}")
             Result.success(recording)
         } catch (e: Exception) {
@@ -120,6 +139,7 @@ class RecordingManager @Inject constructor(
     }
 
     suspend fun stopRecording(): Result<Recording?> {
+        segmentJob?.cancel()
         if (!isRecording) {
             Log.w(TAG, "No recording in progress")
             return Result.success(null)
@@ -318,6 +338,47 @@ class RecordingManager @Inject constructor(
         val cmd = "-y -i '${inputFile.absolutePath}' -vf $drawtext -codec:a copy '${outputFile.absolutePath}'"
         val session = FFmpegKit.execute(cmd)
         return ReturnCode.isSuccess(session.returnCode)
+    }
+
+    fun setStorageLimitGB(gb: Float?) {
+        storageLimitGB = gb
+        enforceStorageLimit()
+    }
+    private fun enforceStorageLimit() {
+        val limitBytes = storageLimitGB?.let { (it * 1024 * 1024 * 1024).toLong() }
+        if (limitBytes == null) return // unlimited
+        val recordingsDir = File(context.filesDir, RECORDINGS_DIR)
+        val recordings = recordingsDir.listFiles()?.filter { it.extension == "mp4" } ?: return
+        var totalSize = recordings.sumOf { it.length() }
+        val sortedRecordings = recordings.sortedBy { it.lastModified() }
+        for (file in sortedRecordings) {
+            if (totalSize <= limitBytes) break
+            totalSize -= file.length()
+            file.delete()
+            Log.d(TAG, "Deleted old recording (storage limit): ${file.name}")
+        }
+        updateStorageInfo()
+    }
+
+    fun getAllRecordingsGroupedByDay(): Map<String, List<Recording>> {
+        val recordingsDir = File(context.filesDir, RECORDINGS_DIR)
+        val files = recordingsDir.listFiles()?.filter { it.extension == "mp4" } ?: emptyList()
+        val recs = files.mapNotNull { file ->
+            // You may want to load from DB if available
+            Recording(
+                id = file.nameWithoutExtension,
+                fileName = file.name,
+                filePath = file.absolutePath,
+                startTime = file.lastModified(),
+                endTime = file.lastModified(),
+                duration = 0L, // Could be improved
+                fileSize = file.length(),
+                type = RecordingType.CONTINUOUS // Could be improved
+            )
+        }
+        return recs.groupBy {
+            SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).format(java.util.Date(it.startTime))
+        }.toSortedMap(compareByDescending { it })
     }
 }
 

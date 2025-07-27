@@ -16,21 +16,28 @@ import javax.inject.Inject
 
 private val Context.dataStore by preferencesDataStore(name = "settings")
 private val DATE_FORMAT_KEY = stringPreferencesKey("date_format")
+private val STORAGE_LIMIT_KEY = stringPreferencesKey("storage_limit_gb")
 
 @HiltViewModel
 class AdvancedSettingsViewModel @Inject constructor(
     private val advancedCameraManager: AdvancedCameraManager,
     private val performanceOptimizer: PerformanceOptimizer,
+    private val recordingManager: RecordingManager,
     application: Application
 ) : ViewModel() {
     private val appContext = application.applicationContext
     private val _dateFormat = MutableStateFlow("yyyy-MM-dd HH:mm:ss")
     val dateFormat: StateFlow<String> = _dateFormat
+    private val _storageLimitGB = MutableStateFlow<Float?>(null)
+    val storageLimitGB: StateFlow<Float?> = _storageLimitGB
+    val storageInfo: StateFlow<StorageInfo> = recordingManager.storageInfo
 
     init {
         viewModelScope.launch {
             val prefs = appContext.dataStore.data.first()
             _dateFormat.value = prefs[DATE_FORMAT_KEY] ?: "yyyy-MM-dd HH:mm:ss"
+            _storageLimitGB.value = prefs[STORAGE_LIMIT_KEY]?.toFloatOrNull()
+            recordingManager.setStorageLimitGB(_storageLimitGB.value)
         }
     }
 
@@ -326,6 +333,17 @@ class AdvancedSettingsViewModel @Inject constructor(
             appendLine("Recording Time: ${getFormattedRecordingTime()}")
             appendLine("Motion Event Rate: ${String.format("%.2f", getMotionEventRate())} events/hour")
             appendLine("Recording Event Rate: ${String.format("%.2f", getRecordingEventRate())} recordings/hour")
+        }
+    }
+
+    fun setStorageLimitGB(gb: Float?) {
+        viewModelScope.launch {
+            appContext.dataStore.edit { prefs ->
+                if (gb == null) prefs.remove(STORAGE_LIMIT_KEY)
+                else prefs[STORAGE_LIMIT_KEY] = gb.toString()
+            }
+            _storageLimitGB.value = gb
+            recordingManager.setStorageLimitGB(gb)
         }
     }
 }

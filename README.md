@@ -182,3 +182,63 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## Support
 
 For support and questions, please open an issue in the repository or contact the development team.
+
+## Key Features
+
+### 4-Hour Recording Segmentation
+- Each recording file is at most 4 hours long.
+- If a recording session exceeds 4 hours, the app automatically starts a new file.
+- This ensures files are manageable and easy to browse.
+
+### User-Configurable Storage Limit
+- Set a maximum storage allocation for recordings in **Advanced Settings**.
+- Choose a specific size (in GB) or select **Unlimited**.
+- If the limit is reached, the app automatically deletes the oldest recordings to make space for new ones.
+
+### Automatic Old File Deletion
+- When storage is full (based on your set limit), the system deletes the oldest files first.
+- This ensures continuous operation without manual intervention.
+
+### Recordings Grouped by Day
+- The recordings list in the app UI is grouped by day (date).
+- Easily browse and find recordings by the day they were made.
+
+## Usage Instructions
+
+### Setting the Storage Limit
+1. Go to **Advanced Settings**.
+2. In the **Storage Limit** section, enter your desired maximum storage in GB, or check **Unlimited Storage**.
+3. The app will show your current usage and enforce the limit automatically.
+
+### How 4-Hour Segmentation Works
+- Start any recording (manual, scheduled, motion, or continuous).
+- If the session lasts longer than 4 hours, the app will automatically close the current file and start a new one.
+- This process is seamless and requires no user action.
+
+### What Happens When Storage is Full?
+- The app checks your storage usage after every new recording.
+- If the limit is reached, the oldest files are deleted until there is enough space for new recordings.
+- If **Unlimited** is selected, no files are deleted automatically.
+
+### Browsing Recordings by Day
+- Open the **Recordings** section in the app.
+- Recordings are grouped under headers for each day (e.g., 2024-06-10).
+- Each entry shows the time, duration, and file size.
+
+## FAQ
+
+**Q: Can I change the 4-hour segmentation interval?**
+A: Not currently, but this can be made configurable if needed.
+
+**Q: What happens if the app can't delete old files (e.g., permission issues)?**
+A: The app will log an error and may stop new recordings until space is available.
+
+**Q: How do I see how much space is used?**
+A: The current usage is shown in **Advanced Settings** under **Storage Limit**.
+
+**Q: Are recordings deleted if I select Unlimited and run out of device space?**
+A: No, the app will not delete files in Unlimited mode. You are responsible for managing device storage in this case.
+
+---
+
+For more details, see the in-app help or contact support.

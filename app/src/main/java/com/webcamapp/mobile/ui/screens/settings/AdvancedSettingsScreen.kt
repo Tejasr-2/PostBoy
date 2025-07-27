@@ -46,6 +46,11 @@ fun AdvancedSettingsScreen(navController: NavController) {
     var showPerformanceDialog by remember { mutableStateOf(false) }
     var showAnalyticsDialog by remember { mutableStateOf(false) }
 
+    val storageLimitGB by viewModel.storageLimitGB.collectAsState()
+    val storageInfo by viewModel.storageInfo.collectAsState()
+    var storageLimitInput by remember { mutableStateOf(storageLimitGB?.toString() ?: "") }
+    var unlimitedStorage by remember { mutableStateOf(storageLimitGB == null) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -180,6 +185,54 @@ fun AdvancedSettingsScreen(navController: NavController) {
                             text = "See: https://developer.android.com/reference/java/text/SimpleDateFormat",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+
+            // Storage Limit Section
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text("Storage Limit", style = MaterialTheme.typography.titleLarge)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Checkbox(
+                                checked = unlimitedStorage,
+                                onCheckedChange = {
+                                    unlimitedStorage = it
+                                    if (it) viewModel.setStorageLimitGB(null)
+                                }
+                            )
+                            Text("Unlimited Storage")
+                        }
+                        if (!unlimitedStorage) {
+                            TextField(
+                                value = storageLimitInput,
+                                onValueChange = {
+                                    storageLimitInput = it.filter { c -> c.isDigit() || c == '.' }
+                                },
+                                label = { Text("Max Storage (GB)") },
+                                singleLine = true,
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Button(onClick = {
+                                val gb = storageLimitInput.toFloatOrNull()
+                                if (gb != null && gb > 0) {
+                                    viewModel.setStorageLimitGB(gb)
+                                }
+                            }) {
+                                Text("Apply")
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Current Usage: ${storageInfo.totalSizeMB / 1024} GB / ${storageLimitGB?.let { "$it GB" } ?: "Unlimited"}",
+                            style = MaterialTheme.typography.bodySmall
                         )
                     }
                 }
