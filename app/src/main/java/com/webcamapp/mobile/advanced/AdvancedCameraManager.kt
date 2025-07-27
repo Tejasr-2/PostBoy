@@ -85,6 +85,7 @@ class AdvancedCameraManager @Inject constructor(
         return result
     }
 
+<<<<<<< HEAD
     fun overlayDateTimeAndAppName(
         frame: Bitmap,
         dateFormat: String = "yyyy-MM-dd HH:mm:ss",
@@ -111,6 +112,8 @@ class AdvancedCameraManager @Inject constructor(
         return result
     }
 
+=======
+>>>>>>> origin/main
     // AI Motion Detection
     fun enableAIMotionDetection(enabled: Boolean) {
         _aiMotionDetection.value = enabled

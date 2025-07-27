@@ -6,6 +6,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+<<<<<<< HEAD
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -14,6 +15,11 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+=======
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+>>>>>>> origin/main
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,9 +38,12 @@ import com.webcamapp.mobile.webrtc.ConnectionState
 import com.webcamapp.mobile.webrtc.WebRTCManager
 import org.webrtc.SurfaceViewRenderer
 import javax.inject.Inject
+<<<<<<< HEAD
 import java.text.SimpleDateFormat
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Uri
+=======
+>>>>>>> origin/main
 
 @Composable
 fun ViewerScreen(navController: NavController) {
@@ -112,6 +121,7 @@ fun ViewerScreen(navController: NavController) {
                 onScanQR = { showQRScanner = true }
             )
         } else {
+<<<<<<< HEAD
             // Device Selector
             ExposedDropdownMenuBox(
                 expanded = false,
@@ -162,6 +172,33 @@ fun ViewerScreen(navController: NavController) {
                             Text("${rec.fileSize / (1024 * 1024)} MB")
                         }
                     }
+=======
+            LazyColumn(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(pairedDevices) { device ->
+                    DeviceCard(
+                        device = device,
+                        isConnected = currentDevice?.id == device.id && isStreaming,
+                        onConnect = {
+                            scope.launch {
+                                viewModel.connectToDevice(device)
+                            }
+                        },
+                        onDisconnect = {
+                            scope.launch {
+                                viewModel.disconnectFromDevice(device.id)
+                            }
+                        },
+                        onDetails = { showDeviceDetails = device },
+                        onUnpair = {
+                            scope.launch {
+                                viewModel.unpairDevice(device.id)
+                            }
+                        }
+                    )
+>>>>>>> origin/main
                 }
             }
         }
@@ -277,6 +314,7 @@ fun ViewerScreen(navController: NavController) {
             onDismiss = { showSettings = false }
         )
     }
+<<<<<<< HEAD
 
     // Playback section (example usage)
     var playbackUri by remember { mutableStateOf<Uri?>(null) }
@@ -303,6 +341,8 @@ fun ViewerScreen(navController: NavController) {
         }
         Text(if (isHD) "HD" else "SD", color = if (isHD) Color(0xFFFF9800) else Color.Gray)
     }
+=======
+>>>>>>> origin/main
 }
 
 @Composable

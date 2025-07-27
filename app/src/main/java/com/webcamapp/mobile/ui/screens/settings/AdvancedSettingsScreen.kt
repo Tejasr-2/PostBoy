@@ -3,14 +3,20 @@ package com.webcamapp.mobile.ui.screens.settings
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+<<<<<<< HEAD
 import androidx.compose.foundation.text.KeyboardOptions
+=======
+>>>>>>> origin/main
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+<<<<<<< HEAD
 import androidx.compose.ui.text.input.KeyboardType
+=======
+>>>>>>> origin/main
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -30,6 +36,7 @@ fun AdvancedSettingsScreen(navController: NavController) {
     val performanceMode by viewModel.performanceMode.collectAsState()
     val optimizationSettings by viewModel.optimizationSettings.collectAsState()
     val analytics by viewModel.analytics.collectAsState()
+<<<<<<< HEAD
     val dateFormat by viewModel.dateFormat.collectAsState()
     val now = remember(dateFormat) { java.util.Date() }
     val formattedNow = remember(dateFormat, now) {
@@ -41,16 +48,21 @@ fun AdvancedSettingsScreen(navController: NavController) {
     }
     var dateFormatInput by remember { mutableStateOf(dateFormat) }
     var showDateFormatError by remember { mutableStateOf(false) }
+=======
+>>>>>>> origin/main
 
     var showAddPrivacyZone by remember { mutableStateOf(false) }
     var showPerformanceDialog by remember { mutableStateOf(false) }
     var showAnalyticsDialog by remember { mutableStateOf(false) }
 
+<<<<<<< HEAD
     val storageLimitGB by viewModel.storageLimitGB.collectAsState()
     val storageInfo by viewModel.storageInfo.collectAsState()
     var storageLimitInput by remember { mutableStateOf(storageLimitGB?.toString() ?: "") }
     var unlimitedStorage by remember { mutableStateOf(storageLimitGB == null) }
 
+=======
+>>>>>>> origin/main
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -124,6 +136,7 @@ fun AdvancedSettingsScreen(navController: NavController) {
                     onResetAnalytics = { viewModel.resetAnalytics() }
                 )
             }
+<<<<<<< HEAD
 
             // Date/Time Format Section
             item {
@@ -237,6 +250,8 @@ fun AdvancedSettingsScreen(navController: NavController) {
                     }
                 }
             }
+=======
+>>>>>>> origin/main
         }
     }
 

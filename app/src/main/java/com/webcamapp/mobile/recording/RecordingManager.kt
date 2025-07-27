@@ -5,9 +5,12 @@ import android.util.Log
 import com.webcamapp.mobile.data.model.MotionEvent
 import com.webcamapp.mobile.data.model.Recording
 import com.webcamapp.mobile.data.model.RecordingType
+<<<<<<< HEAD
 import com.webcamapp.mobile.advanced.AdvancedCameraManager
 import com.arthenica.ffmpegkit.FFmpegKit
 import com.arthenica.ffmpegkit.ReturnCode
+=======
+>>>>>>> origin/main
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,13 +22,20 @@ import javax.inject.Singleton
 
 @Singleton
 class RecordingManager @Inject constructor(
+<<<<<<< HEAD
     private val context: Context,
     private val advancedCameraManager: AdvancedCameraManager
+=======
+    @ApplicationContext private val context: Context
+>>>>>>> origin/main
 ) {
     private var currentRecording: Recording? = null
     private var recordingFile: File? = null
     private var isRecording = false
+<<<<<<< HEAD
     private var storageLimitGB: Float? = null
+=======
+>>>>>>> origin/main
 
     private val _recordingState = MutableStateFlow(RecordingState.IDLE)
     val recordingState: StateFlow<RecordingState> = _recordingState
@@ -36,12 +46,15 @@ class RecordingManager @Inject constructor(
     private val _storageInfo = MutableStateFlow(StorageInfo())
     val storageInfo: StateFlow<StorageInfo> = _storageInfo
 
+<<<<<<< HEAD
     var dateFormat: String = "yyyy-MM-dd HH:mm:ss"
 
     private val MAX_SEGMENT_DURATION_MS = 4 * 60 * 60 * 1000L // 4 hours in ms
     private var segmentStartTime: Long = 0L
     private var segmentJob: kotlinx.coroutines.Job? = null
 
+=======
+>>>>>>> origin/main
     companion object {
         private const val TAG = "RecordingManager"
         private const val RECORDINGS_DIR = "recordings"
@@ -102,6 +115,7 @@ class RecordingManager @Inject constructor(
             _recordingState.value = RecordingState.RECORDING
             _currentRecordingDuration.value = 0L
 
+<<<<<<< HEAD
             segmentStartTime = System.currentTimeMillis()
             segmentJob?.cancel()
             segmentJob = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
@@ -116,6 +130,8 @@ class RecordingManager @Inject constructor(
                 }
             }
 
+=======
+>>>>>>> origin/main
             Log.d(TAG, "Started ${recordingType.name} recording: ${recordingFile.name}")
             Result.success(recording)
         } catch (e: Exception) {
@@ -139,7 +155,10 @@ class RecordingManager @Inject constructor(
     }
 
     suspend fun stopRecording(): Result<Recording?> {
+<<<<<<< HEAD
         segmentJob?.cancel()
+=======
+>>>>>>> origin/main
         if (!isRecording) {
             Log.w(TAG, "No recording in progress")
             return Result.success(null)
@@ -168,6 +187,7 @@ class RecordingManager @Inject constructor(
             // Update storage info
             updateStorageInfo()
 
+<<<<<<< HEAD
             // Post-process video to overlay date/time and app name
             val overlayedFile = File(recordingFile.parent, "overlayed_${recordingFile.name}")
             val overlaySuccess = overlayDateTimeAndAppNameOnVideo(recordingFile, overlayedFile, dateFormat, "WebcamApp")
@@ -186,6 +206,10 @@ class RecordingManager @Inject constructor(
 
             Log.d(TAG, "Stopped recording: ${finalRecording.fileName}, duration: ${finalRecording.duration}ms, size: ${finalRecording.fileSize}bytes, overlay: $overlaySuccess")
             Result.success(finalRecording)
+=======
+            Log.d(TAG, "Stopped recording: ${recording.fileName}, duration: ${duration}ms, size: ${fileSize}bytes")
+            Result.success(updatedRecording)
+>>>>>>> origin/main
         } catch (e: Exception) {
             Log.e(TAG, "Error stopping recording", e)
             Result.failure(e)
@@ -290,6 +314,7 @@ class RecordingManager @Inject constructor(
             retriever.release()
 
             if (bitmap != null) {
+<<<<<<< HEAD
                 // Overlay date/time and app name
                 val overlayedBitmap = advancedCameraManager.overlayDateTimeAndAppName(
                     bitmap, dateFormat, "WebcamApp"
@@ -300,6 +325,13 @@ class RecordingManager @Inject constructor(
                 outputStream.close()
                 bitmap.recycle()
                 overlayedBitmap.recycle()
+=======
+                // Save bitmap as JPEG
+                val outputStream = java.io.FileOutputStream(thumbnailFile)
+                bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 80, outputStream)
+                outputStream.close()
+                bitmap.recycle()
+>>>>>>> origin/main
 
                 Log.d(TAG, "Created thumbnail: ${thumbnailFile.absolutePath}")
                 return thumbnailFile
@@ -312,6 +344,7 @@ class RecordingManager @Inject constructor(
             return null
         }
     }
+<<<<<<< HEAD
 
     suspend fun overlayDateTimeAndAppNameOnVideo(
         inputFile: File,
@@ -400,6 +433,8 @@ class RecordingManager @Inject constructor(
             SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).format(java.util.Date(it.startTime))
         }.toSortedMap(compareByDescending { it })
     }
+=======
+>>>>>>> origin/main
 }
 
 enum class RecordingState {

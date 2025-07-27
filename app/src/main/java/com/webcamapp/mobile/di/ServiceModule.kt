@@ -16,12 +16,15 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
+<<<<<<< HEAD
 import android.app.Application
 import kotlinx.coroutines.runBlocking
 import android.content.Context
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.dataStore
 import androidx.datastore.preferences.core.first
+=======
+>>>>>>> origin/main
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -37,6 +40,7 @@ object ServiceModule {
 
     @Provides
     @Singleton
+<<<<<<< HEAD
     fun provideRecordingManager(
         @ApplicationContext context: Context,
         advancedCameraManager: AdvancedCameraManager,
@@ -52,6 +56,9 @@ object ServiceModule {
         manager.dateFormat = dateFormat
         return manager
     }
+=======
+    fun provideRecordingManager(recordingManager: RecordingManager): RecordingManager = recordingManager
+>>>>>>> origin/main
 
     @Provides
     @Singleton

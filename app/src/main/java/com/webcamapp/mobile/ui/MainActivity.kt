@@ -6,11 +6,14 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+<<<<<<< HEAD
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.ui.graphics.vector.ImageVector
+=======
+>>>>>>> origin/main
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
@@ -24,6 +27,7 @@ import com.webcamapp.mobile.ui.screens.role.RoleSelectionScreen
 import com.webcamapp.mobile.ui.screens.settings.AdvancedSettingsScreen
 import com.webcamapp.mobile.ui.theme.WebcamAppTheme
 import dagger.hilt.android.AndroidEntryPoint
+<<<<<<< HEAD
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material.Icon
@@ -38,6 +42,8 @@ import androidx.compose.material3.restoreState
 import androidx.compose.material3.graph
 
 data class NavItem(val route: String, val icon: ImageVector, val label: String)
+=======
+>>>>>>> origin/main
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -59,6 +65,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun WebcamApp() {
     val navController = rememberNavController()
+<<<<<<< HEAD
     val navItems = listOf(
         NavItem("home", Icons.Default.Home, "Home"),
         NavItem("recordings", Icons.Default.VideoLibrary, "Recordings"),
@@ -95,6 +102,27 @@ fun WebcamApp() {
             composable("recordings") { ViewerScreen(navController) }
             composable("devices") { RoleSelectionScreen(navController) }
             composable("settings") { AdvancedSettingsScreen(navController) }
+=======
+
+    NavHost(navController = navController, startDestination = "login") {
+        composable("login") {
+            LoginScreen(navController = navController)
+        }
+        composable("register") {
+            RegisterScreen(navController = navController)
+        }
+        composable("role_selection") {
+            RoleSelectionScreen(navController = navController)
+        }
+        composable("camera") {
+            CameraScreen(navController = navController)
+        }
+        composable("viewer") {
+            ViewerScreen(navController = navController)
+        }
+        composable("advanced_settings") {
+            AdvancedSettingsScreen(navController = navController)
+>>>>>>> origin/main
         }
     }
 }

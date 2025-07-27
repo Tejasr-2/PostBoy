@@ -1,10 +1,13 @@
 package com.webcamapp.mobile.ui.screens.settings
 
+<<<<<<< HEAD
 import android.app.Application
 import android.content.Context
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+=======
+>>>>>>> origin/main
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.webcamapp.mobile.advanced.*
@@ -14,6 +17,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+<<<<<<< HEAD
 private val Context.dataStore by preferencesDataStore(name = "settings")
 private val DATE_FORMAT_KEY = stringPreferencesKey("date_format")
 private val STORAGE_LIMIT_KEY = stringPreferencesKey("storage_limit_gb")
@@ -49,6 +53,13 @@ class AdvancedSettingsViewModel @Inject constructor(
             _dateFormat.value = format
         }
     }
+=======
+@HiltViewModel
+class AdvancedSettingsViewModel @Inject constructor(
+    private val advancedCameraManager: AdvancedCameraManager,
+    private val performanceOptimizer: PerformanceOptimizer
+) : ViewModel() {
+>>>>>>> origin/main
 
     // State flows from managers
     val privacyZones: StateFlow<List<PrivacyZone>> = advancedCameraManager.privacyZones
@@ -335,6 +346,7 @@ class AdvancedSettingsViewModel @Inject constructor(
             appendLine("Recording Event Rate: ${String.format("%.2f", getRecordingEventRate())} recordings/hour")
         }
     }
+<<<<<<< HEAD
 
     fun setStorageLimitGB(gb: Float?) {
         viewModelScope.launch {
@@ -346,4 +358,6 @@ class AdvancedSettingsViewModel @Inject constructor(
             recordingManager.setStorageLimitGB(gb)
         }
     }
+=======
+>>>>>>> origin/main
 }
