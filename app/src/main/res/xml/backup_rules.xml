@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <!-- Exclude sensitive data from backup -->
+    <exclude domain="sharedpref" path="user_preferences.xml"/>
+    <exclude domain="database" path="webcam_app_db"/>
+    <exclude domain="file" path="recordings/"/>
+    <exclude domain="file" path="thumbnails/"/>
+</full-backup-content>

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">WebcamApp</string>
+    
+    <!-- Authentication -->
+    <string name="login">Login</string>
+    <string name="register">Register</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="dont_have_account">Don\'t have an account? Register</string>
+    <string name="already_have_account">Already have an account? Login</string>
+    
+    <!-- Role Selection -->
+    <string name="choose_role">Choose Your Role</string>
+    <string name="select_device_usage">Select how you want to use this device</string>
+    <string name="camera_device">Camera Device</string>
+    <string name="viewer_device">Viewer Device</string>
+    <string name="camera_description">Use this device as a webcam/security camera</string>
+    <string name="viewer_description">Monitor and control camera devices</string>
+    
+    <!-- Camera Screen -->
+    <string name="start_camera">Start Camera</string>
+    <string name="stop_camera">Stop Camera</string>
+    <string name="settings">Settings</string>
+    <string name="change_role">Change Role</string>
+    <string name="camera_functionality">Camera functionality will be implemented here</string>
+    
+    <!-- Viewer Screen -->
+    <string name="add_camera_device">Add Camera Device</string>
+    <string name="view_paired_devices">View Paired Devices</string>
+    <string name="view_recordings">View Recordings</string>
+    <string name="viewer_functionality">Viewer functionality will be implemented here</string>
+    
+    <!-- Common -->
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
+    <string name="delete">Delete</string>
+    <string name="edit">Edit</string>
+    <string name="back">Back</string>
+    <string name="next">Next</string>
+    <string name="loading">Loading...</string>
+    <string name="error">Error</string>
+    <string name="success">Success</string>
+    
+    <!-- Permissions -->
+    <string name="camera_permission_required">Camera permission is required</string>
+    <string name="microphone_permission_required">Microphone permission is required</string>
+    <string name="storage_permission_required">Storage permission is required</string>
+    <string name="permission_denied">Permission denied</string>
+    
+    <!-- Notifications -->
+    <string name="motion_detected">Motion Detected</string>
+    <string name="motion_detected_message">Motion has been detected on camera %1$s</string>
+    <string name="device_offline">Device Offline</string>
+    <string name="device_offline_message">Camera device %1$s is offline</string>
+    
+    <!-- Settings -->
+    <string name="resolution">Resolution</string>
+    <string name="frame_rate">Frame Rate</string>
+    <string name="motion_detection">Motion Detection</string>
+    <string name="motion_sensitivity">Motion Sensitivity</string>
+    <string name="continuous_recording">Continuous Recording</string>
+    <string name="motion_recording_duration">Motion Recording Duration</string>
+    <string name="screen_dimming">Screen Dimming</string>
+    <string name="auto_start">Auto Start</string>
+    <string name="notifications">Notifications</string>
+    <string name="quiet_hours">Quiet Hours</string>
+    
+    <!-- Device Status -->
+    <string name="online">Online</string>
+    <string name="offline">Offline</string>
+    <string name="connecting">Connecting...</string>
+    <string name="battery_level">Battery Level</string>
+    <string name="storage_remaining">Storage Remaining</string>
+    <string name="connection_quality">Connection Quality</string>
+</resources>
