@@ -96,8 +96,8 @@ fun CameraScreen(navController: NavController) {
                 }
 
                 // Settings button
-                IconButton(onClick = { showSettings = true }) {
-                    Icon(Icons.Default.Settings, contentDescription = "Settings")
+                IconButton(onClick = { navController.navigate("advanced_settings") }) {
+                    Icon(Icons.Default.Settings, contentDescription = "Advanced Settings")
                 }
             }
 
