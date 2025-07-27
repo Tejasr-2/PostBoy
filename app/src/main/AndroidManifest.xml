@@ -67,6 +67,13 @@
             android:exported="false"
             android:foregroundServiceType="camera|microphone" />
 
+        <!-- Streaming Service for WebRTC connections -->
+        <service
+            android:name=".streaming.StreamingService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="mediaProjection" />
+
         <!-- Firebase Messaging Service -->
         <service
             android:name=".service.WebcamFirebaseMessagingService"
