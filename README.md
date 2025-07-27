@@ -242,3 +242,37 @@ A: No, the app will not delete files in Unlimited mode. You are responsible for 
 ---
 
 For more details, see the in-app help or contact support.
+
+# WebcamApp
+
+## Key Features
+
+### Modern UI/UX (Material You)
+- **Material You dynamic theming**: Adapts to your device’s wallpaper and system theme.
+- **Bottom navigation bar**: Quick access to Home (Live), Recordings, Devices, and Settings.
+- **Home/Live screen**: Edge-to-edge video, overlay controls (HD, record, mute, fullscreen), device selector, and recent recordings.
+- **Recordings screen**: Grouped by day with sticky headers, thumbnails, search/filter, swipe to delete, and quick play.
+- **Devices screen**: Device cards with status, battery, last seen, and quick actions.
+- **Settings screen**: Sectioned, icons, sliders, dropdowns, and inline values.
+- **Interactive video player**: Floating, auto-hide controls, animated seek bar, quality/speed menus, and modern overlays.
+- **Smooth transitions and animations**: For navigation, controls, and overlays.
+- **Accessibility**: Large touch targets, high-contrast mode, content descriptions.
+
+## Usage Instructions
+
+- Use the bottom navigation bar to switch between Home, Recordings, Devices, and Settings.
+- On the Home screen, select a device, view live video, and use overlay controls.
+- On the Recordings screen, browse by day, search/filter, swipe to delete, and tap to play.
+- On the Devices screen, manage your paired devices.
+- On the Settings screen, customize storage, overlays, and more.
+
+## Coming Soon
+- Picture-in-picture support for video player.
+- Animated transitions for device/recording cards.
+- More advanced search and filtering for recordings.
+- Customizable overlays (app name, logo, etc.).
+- Cloud/remote access features (optional backend).
+
+---
+
+For more details, see the in-app help or contact support.
