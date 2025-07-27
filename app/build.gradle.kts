@@ -90,6 +90,16 @@ dependencies {
     implementation("androidx.camera:camera-view:1.3.1")
     implementation("androidx.camera:camera-extensions:1.3.1")
 
+    // WebRTC
+    implementation("org.webrtc:google-webrtc:1.0.32006")
+
+    // QR Code
+    implementation("com.google.zxing:core:3.5.2")
+    implementation("com.journeyapps:zxing-android-embedded:4.3.0")
+
+    // WebSocket
+    implementation("org.java-websocket:Java-WebSocket:1.5.3")
+
     // Firebase
     implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
     implementation("com.google.firebase:firebase-auth-ktx")
