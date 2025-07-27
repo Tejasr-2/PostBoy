@@ -5,6 +5,9 @@ import android.util.Log
 import com.webcamapp.mobile.data.model.MotionEvent
 import com.webcamapp.mobile.data.model.Recording
 import com.webcamapp.mobile.data.model.RecordingType
+import com.webcamapp.mobile.advanced.AdvancedCameraManager
+import com.arthenica.ffmpegkit.FFmpegKit
+import com.arthenica.ffmpegkit.ReturnCode
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,11 +19,13 @@ import javax.inject.Singleton
 
 @Singleton
 class RecordingManager @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val advancedCameraManager: AdvancedCameraManager
 ) {
     private var currentRecording: Recording? = null
     private var recordingFile: File? = null
     private var isRecording = false
+    private var storageLimitGB: Float? = null
 
     private val _recordingState = MutableStateFlow(RecordingState.IDLE)
     val recordingState: StateFlow<RecordingState> = _recordingState
@@ -30,6 +35,12 @@ class RecordingManager @Inject constructor(
 
     private val _storageInfo = MutableStateFlow(StorageInfo())
     val storageInfo: StateFlow<StorageInfo> = _storageInfo
+
+    var dateFormat: String = "yyyy-MM-dd HH:mm:ss"
+
+    private val MAX_SEGMENT_DURATION_MS = 4 * 60 * 60 * 1000L // 4 hours in ms
+    private var segmentStartTime: Long = 0L
+    private var segmentJob: kotlinx.coroutines.Job? = null
 
     companion object {
         private const val TAG = "RecordingManager"
@@ -91,6 +102,20 @@ class RecordingManager @Inject constructor(
             _recordingState.value = RecordingState.RECORDING
             _currentRecordingDuration.value = 0L
 
+            segmentStartTime = System.currentTimeMillis()
+            segmentJob?.cancel()
+            segmentJob = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+                while (isRecording) {
+                    val elapsed = System.currentTimeMillis() - segmentStartTime
+                    if (elapsed >= MAX_SEGMENT_DURATION_MS) {
+                        stopRecording()
+                        startRecording() // start new segment
+                        break
+                    }
+                    kotlinx.coroutines.delay(60_000) // check every minute
+                }
+            }
+
             Log.d(TAG, "Started ${recordingType.name} recording: ${recordingFile.name}")
             Result.success(recording)
         } catch (e: Exception) {
@@ -114,6 +139,7 @@ class RecordingManager @Inject constructor(
     }
 
     suspend fun stopRecording(): Result<Recording?> {
+        segmentJob?.cancel()
         if (!isRecording) {
             Log.w(TAG, "No recording in progress")
             return Result.success(null)
@@ -142,8 +168,24 @@ class RecordingManager @Inject constructor(
             // Update storage info
             updateStorageInfo()
 
-            Log.d(TAG, "Stopped recording: ${recording.fileName}, duration: ${duration}ms, size: ${fileSize}bytes")
-            Result.success(updatedRecording)
+            // Post-process video to overlay date/time and app name
+            val overlayedFile = File(recordingFile.parent, "overlayed_${recordingFile.name}")
+            val overlaySuccess = overlayDateTimeAndAppNameOnVideo(recordingFile, overlayedFile, dateFormat, "WebcamApp")
+            val finalFile = if (overlaySuccess) {
+                // Replace original file
+                if (recordingFile.delete()) {
+                    overlayedFile.renameTo(recordingFile)
+                    recordingFile
+                } else {
+                    overlayedFile // fallback: keep overlayed file
+                }
+            } else {
+                recordingFile // fallback: original file
+            }
+            val finalRecording = updatedRecording.copy(filePath = finalFile.absolutePath, fileSize = finalFile.length())
+
+            Log.d(TAG, "Stopped recording: ${finalRecording.fileName}, duration: ${finalRecording.duration}ms, size: ${finalRecording.fileSize}bytes, overlay: $overlaySuccess")
+            Result.success(finalRecording)
         } catch (e: Exception) {
             Log.e(TAG, "Error stopping recording", e)
             Result.failure(e)
@@ -248,11 +290,16 @@ class RecordingManager @Inject constructor(
             retriever.release()
 
             if (bitmap != null) {
+                // Overlay date/time and app name
+                val overlayedBitmap = advancedCameraManager.overlayDateTimeAndAppName(
+                    bitmap, dateFormat, "WebcamApp"
+                )
                 // Save bitmap as JPEG
                 val outputStream = java.io.FileOutputStream(thumbnailFile)
-                bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 80, outputStream)
+                overlayedBitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 80, outputStream)
                 outputStream.close()
                 bitmap.recycle()
+                overlayedBitmap.recycle()
 
                 Log.d(TAG, "Created thumbnail: ${thumbnailFile.absolutePath}")
                 return thumbnailFile
@@ -264,6 +311,94 @@ class RecordingManager @Inject constructor(
             Log.e(TAG, "Error creating thumbnail", e)
             return null
         }
+    }
+
+    suspend fun overlayDateTimeAndAppNameOnVideo(
+        inputFile: File,
+        outputFile: File,
+        dateFormat: String = this.dateFormat,
+        appName: String = "WebcamApp"
+    ): Boolean {
+        // Compose FFmpeg drawtext filter
+        val fontSize = 24
+        val fontColor = "white"
+        val boxColor = "black@0.5"
+        val boxBorder = 5
+        val x = 20
+        val y = "h-line_h-20"
+        // FFmpeg date/time: %{localtime:%Y-%m-%d %H\\:%M\\:%S}
+        val ffmpegDateFormat = dateFormat
+            .replace("yyyy", "%Y")
+            .replace("MM", "%m")
+            .replace("dd", "%d")
+            .replace("HH", "%H")
+            .replace("mm", "%M")
+            .replace("ss", "%S")
+        val drawtext = "drawtext=fontfile=/system/fonts/Roboto-Regular.ttf:text='%{localtime:$ffmpegDateFormat}  |  $appName':fontcolor=$fontColor:fontsize=$fontSize:box=1:boxcolor=$boxColor:boxborderw=$boxBorder:x=$x:y=$y"
+        val cmd = "-y -i '${inputFile.absolutePath}' -vf $drawtext -codec:a copy '${outputFile.absolutePath}'"
+        val session = FFmpegKit.execute(cmd)
+        return ReturnCode.isSuccess(session.returnCode)
+    }
+
+    fun setStorageLimitGB(gb: Float?) {
+        storageLimitGB = gb
+        enforceStorageLimit()
+    }
+    private fun enforceStorageLimit() {
+        val limitBytes = storageLimitGB?.let { (it * 1024 * 1024 * 1024).toLong() }
+        if (limitBytes == null) return // unlimited
+        val recordingsDir = File(context.filesDir, RECORDINGS_DIR)
+        val recordings = recordingsDir.listFiles()?.filter { it.extension == "mp4" } ?: return
+        var totalSize = recordings.sumOf { it.length() }
+        val sortedRecordings = recordings.sortedBy { it.lastModified() }
+        for (file in sortedRecordings) {
+            if (totalSize <= limitBytes) break
+            totalSize -= file.length()
+            file.delete()
+            Log.d(TAG, "Deleted old recording (storage limit): ${file.name}")
+        }
+        updateStorageInfo()
+    }
+
+    fun getAllRecordingsGroupedByDay(): Map<String, List<Recording>> {
+        val recordingsDir = File(context.filesDir, RECORDINGS_DIR)
+        val files = recordingsDir.listFiles()?.filter { it.extension == "mp4" } ?: emptyList()
+        val recs = files.mapNotNull { file ->
+            // You may want to load from DB if available
+            Recording(
+                id = file.nameWithoutExtension,
+                fileName = file.name,
+                filePath = file.absolutePath,
+                startTime = file.lastModified(),
+                endTime = file.lastModified(),
+                duration = 0L, // Could be improved
+                fileSize = file.length(),
+                type = RecordingType.CONTINUOUS // Could be improved
+            )
+        }
+        return recs.groupBy {
+            SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).format(java.util.Date(it.startTime))
+        }.toSortedMap(compareByDescending { it })
+    }
+
+    fun getRecordingsForDeviceGroupedByDay(deviceId: String): Map<String, List<Recording>> {
+        val recordingsDir = File(context.filesDir, RECORDINGS_DIR)
+        val files = recordingsDir.listFiles()?.filter { it.extension == "mp4" && it.name.startsWith(deviceId) } ?: emptyList()
+        val recs = files.mapNotNull { file ->
+            Recording(
+                id = file.nameWithoutExtension,
+                fileName = file.name,
+                filePath = file.absolutePath,
+                startTime = file.lastModified(),
+                endTime = file.lastModified(),
+                duration = 0L,
+                fileSize = file.length(),
+                type = RecordingType.CONTINUOUS
+            )
+        }
+        return recs.groupBy {
+            SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).format(java.util.Date(it.startTime))
+        }.toSortedMap(compareByDescending { it })
     }
 }
 

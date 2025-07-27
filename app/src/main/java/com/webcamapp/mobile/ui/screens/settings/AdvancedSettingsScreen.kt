@@ -3,12 +3,20 @@ package com.webcamapp.mobile.ui.screens.settings
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+<<<<<<< HEAD
+import androidx.compose.foundation.text.KeyboardOptions
+=======
+>>>>>>> origin/main
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+<<<<<<< HEAD
+import androidx.compose.ui.text.input.KeyboardType
+=======
+>>>>>>> origin/main
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -28,11 +36,33 @@ fun AdvancedSettingsScreen(navController: NavController) {
     val performanceMode by viewModel.performanceMode.collectAsState()
     val optimizationSettings by viewModel.optimizationSettings.collectAsState()
     val analytics by viewModel.analytics.collectAsState()
+<<<<<<< HEAD
+    val dateFormat by viewModel.dateFormat.collectAsState()
+    val now = remember(dateFormat) { java.util.Date() }
+    val formattedNow = remember(dateFormat, now) {
+        try {
+            java.text.SimpleDateFormat(dateFormat, java.util.Locale.getDefault()).format(now)
+        } catch (e: Exception) {
+            "Invalid format"
+        }
+    }
+    var dateFormatInput by remember { mutableStateOf(dateFormat) }
+    var showDateFormatError by remember { mutableStateOf(false) }
+=======
+>>>>>>> origin/main
 
     var showAddPrivacyZone by remember { mutableStateOf(false) }
     var showPerformanceDialog by remember { mutableStateOf(false) }
     var showAnalyticsDialog by remember { mutableStateOf(false) }
 
+<<<<<<< HEAD
+    val storageLimitGB by viewModel.storageLimitGB.collectAsState()
+    val storageInfo by viewModel.storageInfo.collectAsState()
+    var storageLimitInput by remember { mutableStateOf(storageLimitGB?.toString() ?: "") }
+    var unlimitedStorage by remember { mutableStateOf(storageLimitGB == null) }
+
+=======
+>>>>>>> origin/main
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -106,6 +136,122 @@ fun AdvancedSettingsScreen(navController: NavController) {
                     onResetAnalytics = { viewModel.resetAnalytics() }
                 )
             }
+<<<<<<< HEAD
+
+            // Date/Time Format Section
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text("Date/Time Format", style = MaterialTheme.typography.titleLarge)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        TextField(
+                            value = dateFormatInput,
+                            onValueChange = {
+                                dateFormatInput = it
+                                showDateFormatError = false
+                            },
+                            label = { Text("Date/Time Format Pattern") },
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                            isError = showDateFormatError,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Preview: $formattedNow",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = if (showDateFormatError || formattedNow == "Invalid format") MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Row {
+                            Button(onClick = {
+                                try {
+                                    java.text.SimpleDateFormat(dateFormatInput, java.util.Locale.getDefault()).format(now)
+                                    viewModel.setDateFormat(dateFormatInput)
+                                    showDateFormatError = false
+                                } catch (e: Exception) {
+                                    showDateFormatError = true
+                                }
+                            }) {
+                                Text("Apply")
+                            }
+                            Spacer(modifier = Modifier.width(8.dp))
+                            OutlinedButton(onClick = {
+                                dateFormatInput = "yyyy-MM-dd HH:mm:ss"
+                                viewModel.setDateFormat("yyyy-MM-dd HH:mm:ss")
+                                showDateFormatError = false
+                            }) {
+                                Text("Reset Default")
+                            }
+                        }
+                        if (showDateFormatError || formattedNow == "Invalid format") {
+                            Text(
+                                text = "Invalid date/time format pattern.",
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "See: https://developer.android.com/reference/java/text/SimpleDateFormat",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+
+            // Storage Limit Section
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text("Storage Limit", style = MaterialTheme.typography.titleLarge)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Checkbox(
+                                checked = unlimitedStorage,
+                                onCheckedChange = {
+                                    unlimitedStorage = it
+                                    if (it) viewModel.setStorageLimitGB(null)
+                                }
+                            )
+                            Text("Unlimited Storage")
+                        }
+                        if (!unlimitedStorage) {
+                            TextField(
+                                value = storageLimitInput,
+                                onValueChange = {
+                                    storageLimitInput = it.filter { c -> c.isDigit() || c == '.' }
+                                },
+                                label = { Text("Max Storage (GB)") },
+                                singleLine = true,
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Button(onClick = {
+                                val gb = storageLimitInput.toFloatOrNull()
+                                if (gb != null && gb > 0) {
+                                    viewModel.setStorageLimitGB(gb)
+                                }
+                            }) {
+                                Text("Apply")
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Current Usage: ${storageInfo.totalSizeMB / 1024} GB / ${storageLimitGB?.let { "$it GB" } ?: "Unlimited"}",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }
+            }
+=======
+>>>>>>> origin/main
         }
     }
 

@@ -10,6 +10,7 @@ import com.webcamapp.mobile.R
 import com.webcamapp.mobile.ui.MainActivity
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.collectLatest
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -23,6 +24,9 @@ class CameraService : Service() {
 
     @Inject
     lateinit var recordingManager: RecordingManager
+
+    @Inject
+    lateinit var powerManager: PowerManager
 
     private val serviceScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
     private var isRecording = false
@@ -45,6 +49,13 @@ class CameraService : Service() {
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
+        // Observe power mode and adjust camera quality
+        serviceScope.launch {
+            powerManager.powerMode.collectLatest { mode ->
+                val recommended = powerManager.getRecommendedResolution()
+                cameraManager.setResolution(recommended)
+            }
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {

@@ -25,6 +25,15 @@ import com.webcamapp.mobile.service.CameraService
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.flow.collectAsState
 import kotlinx.coroutines.launch
+<<<<<<< HEAD
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.stickyHeader
+import java.text.SimpleDateFormat
+=======
+>>>>>>> origin/main
 
 @Composable
 fun CameraScreen(navController: NavController) {

@@ -30,6 +30,12 @@ private val LightColorScheme = lightColorScheme(
 @Composable
 fun WebcamAppTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
+<<<<<<< HEAD
+    content: @Composable () -> Unit
+) {
+    val context = LocalContext.current
+    val colorScheme = if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+=======
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
@@ -51,6 +57,7 @@ fun WebcamAppTheme(
         }
     }
 
+>>>>>>> origin/main
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,
