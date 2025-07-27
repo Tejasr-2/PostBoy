@@ -22,10 +22,9 @@ import com.webcamapp.mobile.power.PowerManager
 import com.webcamapp.mobile.recording.RecordingManager
 import com.webcamapp.mobile.recording.RecordingState
 import com.webcamapp.mobile.service.CameraService
-import dagger.hilt.android.AndroidEntryPoint
+import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.flow.collectAsState
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 @Composable
 fun CameraScreen(navController: NavController) {
