@@ -5,6 +5,7 @@ import android.util.Log
 import com.webcamapp.mobile.data.model.MotionEvent
 import com.webcamapp.mobile.data.model.Recording
 import com.webcamapp.mobile.data.model.RecordingType
+import com.webcamapp.mobile.advanced.AdvancedCameraManager
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,7 +17,8 @@ import javax.inject.Singleton
 
 @Singleton
 class RecordingManager @Inject constructor(
-    @ApplicationContext private val context: Context
+    private val context: Context,
+    private val advancedCameraManager: AdvancedCameraManager
 ) {
     private var currentRecording: Recording? = null
     private var recordingFile: File? = null
@@ -30,6 +32,8 @@ class RecordingManager @Inject constructor(
 
     private val _storageInfo = MutableStateFlow(StorageInfo())
     val storageInfo: StateFlow<StorageInfo> = _storageInfo
+
+    var dateFormat: String = "yyyy-MM-dd HH:mm:ss"
 
     companion object {
         private const val TAG = "RecordingManager"
@@ -248,11 +252,16 @@ class RecordingManager @Inject constructor(
             retriever.release()
 
             if (bitmap != null) {
+                // Overlay date/time and app name
+                val overlayedBitmap = advancedCameraManager.overlayDateTimeAndAppName(
+                    bitmap, dateFormat, "WebcamApp"
+                )
                 // Save bitmap as JPEG
                 val outputStream = java.io.FileOutputStream(thumbnailFile)
-                bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 80, outputStream)
+                overlayedBitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 80, outputStream)
                 outputStream.close()
                 bitmap.recycle()
+                overlayedBitmap.recycle()
 
                 Log.d(TAG, "Created thumbnail: ${thumbnailFile.absolutePath}")
                 return thumbnailFile

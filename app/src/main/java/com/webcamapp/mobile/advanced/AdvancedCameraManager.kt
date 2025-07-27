@@ -85,6 +85,32 @@ class AdvancedCameraManager @Inject constructor(
         return result
     }
 
+    fun overlayDateTimeAndAppName(
+        frame: Bitmap,
+        dateFormat: String = "yyyy-MM-dd HH:mm:ss",
+        appName: String = "WebcamApp"
+    ): Bitmap {
+        val result = frame.copy(frame.config, true)
+        val canvas = android.graphics.Canvas(result)
+        val paint = android.graphics.Paint().apply {
+            color = android.graphics.Color.WHITE
+            textSize = (frame.height * 0.035f).coerceAtLeast(24f)
+            isAntiAlias = true
+            setShadowLayer(4f, 2f, 2f, android.graphics.Color.BLACK)
+        }
+        val now = java.util.Date()
+        val dateText = try {
+            java.text.SimpleDateFormat(dateFormat, java.util.Locale.getDefault()).format(now)
+        } catch (e: Exception) {
+            java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.getDefault()).format(now)
+        }
+        val overlayText = "$dateText  |  $appName"
+        val x = 16f
+        val y = frame.height - 32f
+        canvas.drawText(overlayText, x, y, paint)
+        return result
+    }
+
     // AI Motion Detection
     fun enableAIMotionDetection(enabled: Boolean) {
         _aiMotionDetection.value = enabled

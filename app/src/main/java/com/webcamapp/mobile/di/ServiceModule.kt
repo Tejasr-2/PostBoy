@@ -16,6 +16,12 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
+import android.app.Application
+import kotlinx.coroutines.runBlocking
+import android.content.Context
+import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.core.dataStore
+import androidx.datastore.preferences.core.first
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -31,7 +37,21 @@ object ServiceModule {
 
     @Provides
     @Singleton
-    fun provideRecordingManager(recordingManager: RecordingManager): RecordingManager = recordingManager
+    fun provideRecordingManager(
+        @ApplicationContext context: Context,
+        advancedCameraManager: AdvancedCameraManager,
+        application: Application
+    ): RecordingManager {
+        val manager = RecordingManager(context, advancedCameraManager)
+        // Load date format from DataStore synchronously at startup
+        val dataStore = context.applicationContext.let { (it as Application).dataStore }
+        val key = androidx.datastore.preferences.core.stringPreferencesKey("date_format")
+        val dateFormat = runBlocking {
+            dataStore.data.first()[key] ?: "yyyy-MM-dd HH:mm:ss"
+        }
+        manager.dateFormat = dateFormat
+        return manager
+    }
 
     @Provides
     @Singleton
