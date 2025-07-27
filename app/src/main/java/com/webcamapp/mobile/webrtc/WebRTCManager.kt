@@ -356,6 +356,12 @@ class WebRTCManager @Inject constructor(
         Log.d(TAG, "WebRTCManager released")
     }
 
+    fun setStreamQuality(quality: String) {
+        // TODO: Implement actual stream quality switching (e.g., change video track resolution or signal camera device)
+        // For now, just log the change
+        Log.d("WebRTCManager", "Switching stream quality to $quality")
+    }
+
     // Reference to signaling manager (will be injected)
     private var signalingManager: SignalingManager? = null
 

@@ -6,9 +6,14 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,6 +32,9 @@ import com.webcamapp.mobile.webrtc.ConnectionState
 import com.webcamapp.mobile.webrtc.WebRTCManager
 import org.webrtc.SurfaceViewRenderer
 import javax.inject.Inject
+import java.text.SimpleDateFormat
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.Uri
 
 @Composable
 fun ViewerScreen(navController: NavController) {
@@ -104,31 +112,56 @@ fun ViewerScreen(navController: NavController) {
                 onScanQR = { showQRScanner = true }
             )
         } else {
-            LazyColumn(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+            // Device Selector
+            ExposedDropdownMenuBox(
+                expanded = false,
+                onExpandedChange = {}
             ) {
-                items(pairedDevices) { device ->
-                    DeviceCard(
-                        device = device,
-                        isConnected = currentDevice?.id == device.id && isStreaming,
-                        onConnect = {
-                            scope.launch {
-                                viewModel.connectToDevice(device)
-                            }
-                        },
-                        onDisconnect = {
-                            scope.launch {
-                                viewModel.disconnectFromDevice(device.id)
-                            }
-                        },
-                        onDetails = { showDeviceDetails = device },
-                        onUnpair = {
-                            scope.launch {
-                                viewModel.unpairDevice(device.id)
-                            }
+                TextField(
+                    value = selectedDevice?.name ?: "Select Device",
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Device") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(false) },
+                    modifier = Modifier.menuAnchor().fillMaxWidth()
+                )
+                DropdownMenu(
+                    expanded = false,
+                    onDismissRequest = {},
+                ) {
+                    devices.forEach { device ->
+                        DropdownMenuItem(
+                            text = { Text(device.name) },
+                            onClick = { selectedDevice = device }
+                        )
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            // Recordings by Day for Selected Device
+            val recordingsByDay = selectedDevice?.let { viewModel.getRecordingsGroupedByDay(it) } ?: emptyMap()
+            val listState = rememberLazyListState()
+            LazyColumn(state = listState, modifier = Modifier.fillMaxWidth().weight(1f)) {
+                recordingsByDay.forEach { (date, recs) ->
+                    stickyHeader {
+                        Surface(color = MaterialTheme.colorScheme.surfaceVariant) {
+                            Text(
+                                text = date,
+                                style = MaterialTheme.typography.titleMedium,
+                                modifier = Modifier.padding(8.dp)
+                            )
                         }
-                    )
+                    }
+                    items(recs) { rec ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(8.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date(rec.startTime)))
+                            Text("${rec.duration / 1000 / 60} min")
+                            Text("${rec.fileSize / (1024 * 1024)} MB")
+                        }
+                    }
                 }
             }
         }
@@ -243,6 +276,32 @@ fun ViewerScreen(navController: NavController) {
         ViewerSettingsDialog(
             onDismiss = { showSettings = false }
         )
+    }
+
+    // Playback section (example usage)
+    var playbackUri by remember { mutableStateOf<Uri?>(null) }
+    if (playbackUri != null) {
+        InteractiveVideoPlayer(
+            videoUri = playbackUri!!,
+            availableQualities = listOf("HD", "SD"),
+            onQualityChange = { /* Switch file or stream if available */ },
+            onSpeedChange = { /* Set playback speed */ }
+        )
+    }
+    // Live streaming section
+    var isHD by remember { mutableStateOf(true) }
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        IconButton(onClick = {
+            isHD = !isHD
+            viewModel.setLiveStreamQuality(if (isHD) "HD" else "SD")
+        }) {
+            Icon(
+                imageVector = Icons.Default.Hd,
+                contentDescription = "HD Toggle",
+                tint = if (isHD) Color(0xFFFF9800) else Color.Gray
+            )
+        }
+        Text(if (isHD) "HD" else "SD", color = if (isHD) Color(0xFFFF9800) else Color.Gray)
     }
 }
 

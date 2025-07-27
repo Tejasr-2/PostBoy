@@ -11,6 +11,8 @@ import com.webcamapp.mobile.pairing.PairingState
 import com.webcamapp.mobile.streaming.StreamingService
 import com.webcamapp.mobile.webrtc.ConnectionState
 import com.webcamapp.mobile.webrtc.WebRTCManager
+import com.webcamapp.mobile.recording.RecordingManager
+import com.webcamapp.mobile.data.model.Recording
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.*
@@ -21,7 +23,8 @@ import javax.inject.Inject
 class ViewerViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val devicePairingManager: DevicePairingManager,
-    private val webRTCManager: WebRTCManager
+    private val webRTCManager: WebRTCManager,
+    private val recordingManager: RecordingManager
 ) : ViewModel() {
 
     // State flows from managers
@@ -192,6 +195,15 @@ class ViewerViewModel @Inject constructor(
 
     fun getCurrentStreamingDevice(): Device? {
         return if (isStreaming.value) currentDevice.value else null
+    }
+
+    fun getRecordingsGroupedByDay(device: Device): Map<String, List<Recording>> {
+        return recordingManager.getRecordingsForDeviceGroupedByDay(device.id)
+    }
+
+    fun setLiveStreamQuality(quality: String) {
+        // Switch the live stream quality (HD/SD) via WebRTCManager or signaling
+        webRTCManager.setStreamQuality(quality)
     }
 
     override fun onCleared() {

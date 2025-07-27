@@ -380,6 +380,26 @@ class RecordingManager @Inject constructor(
             SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).format(java.util.Date(it.startTime))
         }.toSortedMap(compareByDescending { it })
     }
+
+    fun getRecordingsForDeviceGroupedByDay(deviceId: String): Map<String, List<Recording>> {
+        val recordingsDir = File(context.filesDir, RECORDINGS_DIR)
+        val files = recordingsDir.listFiles()?.filter { it.extension == "mp4" && it.name.startsWith(deviceId) } ?: emptyList()
+        val recs = files.mapNotNull { file ->
+            Recording(
+                id = file.nameWithoutExtension,
+                fileName = file.name,
+                filePath = file.absolutePath,
+                startTime = file.lastModified(),
+                endTime = file.lastModified(),
+                duration = 0L,
+                fileSize = file.length(),
+                type = RecordingType.CONTINUOUS
+            )
+        }
+        return recs.groupBy {
+            SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).format(java.util.Date(it.startTime))
+        }.toSortedMap(compareByDescending { it })
+    }
 }
 
 enum class RecordingState {
